@@ -1,0 +1,14 @@
+<configuration>
+  <property>
+    <name>dfs.datanode.data.dir</name>
+    <value>/home/pi/Software/Hadoop/hdfs/datanode</value>
+  </property>
+  <property>
+    <name>dfs.namenode.name.dir</name>
+    <value>/home/pi/Software/Hadoop/hdfs/namenode</value>
+  </property>
+  <property>
+    <name>dfs.replication</name>
+    <value>4</value>
+  </property>
+</configuration>
