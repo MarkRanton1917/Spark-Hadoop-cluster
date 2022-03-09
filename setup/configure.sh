@@ -1,4 +1,3 @@
-
 #!/usr/bin/bash
 
 homeDir=/home/pi
@@ -96,6 +95,10 @@ then
   _setDhcpcd $1
   _setHosts $1
   _setSsh $1
+  if [[ $1 -eq 1 ]]; then
+    mkdir homeDir/SSH
+    mkdir homeDir/SSH/tmp
+  fi
   echo "OK"
 elif [[ $# -eq 2 ]]
 then
