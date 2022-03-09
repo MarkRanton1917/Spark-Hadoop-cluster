@@ -26,7 +26,7 @@
   </property>
   <property>
     <name>yarn.scheduler.minimum-allocation-mb</name>
-    <value>64</value>
+    <value>256</value>
   </property>
   <property>
     <name>yarn.nodemanager.vmem-check-enabled</name>
