@@ -9,12 +9,12 @@ object Main {
 
     val session = SparkSession
       .builder
-      .appName("Mnist Dataframe")
-      .master("local[*]")
+      .appName("Mnist Logistic Regression")
+      .master("yarn")
       .getOrCreate
 
-    val mnistTrainDataset = datasetUtil.getDataset(session, "MNIST_train.txt")
-    val mnistEvalDataset = datasetUtil.getDataset(session, "MNIST_test.txt")
+    val mnistTrainDataset = datasetUtil.getDataset(session, "hdfs:///data/MNIST/MNIST_train.txt")
+    val mnistEvalDataset = datasetUtil.getDataset(session, "hdfs:///data/MNIST/MNIST_train.txt")
 
     mnistTrainDataset.printSchema
 
