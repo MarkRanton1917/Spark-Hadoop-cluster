@@ -1,20 +1,42 @@
 function clusterUtil {
 
 	cluster_id="pi@192.168.1.101"
-	cluster_hadoop_bin="/home/pi/Software/Hadoop/hadoop-3.3.1/bin"
+	cluster_home="/home/pi"
+	cluster_ssh_tmp="$cluster_home/SSH/tmp"
+	cluster_hadoop_home="$cluster_home/Software/Hadoop/hadoop-3.3.1"
+	cluster_spark_home="$cluster_home/Software/Spark/spark-3.2.1"
 
 	function namenodeCmd {
 		ssh $cluster_id "$@"
 	}
 
 	function utilCpHdfs {
-		tmp_dir="/home/pi/SSH/tmp"
-		scp $1 $cluster_id:$tmp_dir
-		namenodeCmd "$cluster_hadoop_bin/hadoop fs -put $tmp_dir/* hdfs://$2; rm $tmp_dir/*"
+		scp $1 $cluster_id:$cluster_ssh_tmp
+		namenodeCmd "$cluster_hadoop_home/bin/hadoop fs -put $cluster_ssh_tmp/* hdfs://$2; rm $cluster_ssh_tmp/*"
 	}
 
 	function util_Hdfs {
-		namenodeCmd "$cluster_hadoop_bin/hadoop fs $1 hdfs://$2"
+		namenodeCmd "$cluster_hadoop_home/bin/hadoop fs $1 hdfs://$2"
+	}
+
+	function utilTurnOn {
+		namenodeCmd "$cluster_hadoop_home/sbin/start-dfs.sh && $cluster_hadoop_home/sbin/start-yarn.sh"
+	}
+
+	function utilTurnOff {
+		namenodeCmd "$cluster_hadoop_home/sbin/stop-all.sh"
+	}
+
+	function utilPowerOff {
+		utilTurnOff
+		namemodeCmd ""
+	}
+
+	function utilRun {
+		scp $1 $cluster_id:$cluster_ssh_tmp
+		jar_name=`basename $1`
+		namenodeCmd "source .bashrc; $cluster_spark_home/bin/spark-submit --class Main --master yarn --deploy-mode client \
+		--conf spark.executor.memory=$2 $cluster_ssh_tmp/$jar_name; rm $cluster_ssh_tmp/*"
 	}
 
 	function showError {
@@ -33,8 +55,9 @@ function clusterUtil {
 		if [[ $# -lt 2 ]]; then
 			showError "an"
 			return -1
+		fi
 
-		elif [[ $2 == "-put" ]]; then
+		if [[ $2 == "-put" ]]; then
 
 			if [[ $# -ne 4 ]]; then
 				showError "an"
@@ -60,6 +83,44 @@ function clusterUtil {
 			showError "ce" $2
 			return -1
 		fi
+
+	elif [[ $1 == "state" ]]; then
+
+		if [[ $# -ne 2 ]]; then
+			showError "an"
+			return -1
+		fi
+
+		if [[ $2 == "-trnOn" ]]; then
+			utilTurnOn
+
+		elif [[ $2 == "-trnOff" ]]; then
+			utilTurnOff
+
+		elif [[ $2 == "-pwrOff" ]]; then
+			utilPowerOff
+			namenodeCmd "clustercmd poweroff"
+			poweroff
+
+		else
+			showError "ce" $2
+			return -1
+		fi
+
+	elif [[ $1 == "run" ]]; then
+
+		if [[ $# -ne 3 ]]; then
+			showError "an"
+			return -1
+	 	fi
+
+		if ! [[ -e $2 ]]; then
+			showError "ae" $2
+			return -1
+		fi
+		
+		utilRun $2 $3
+
 	else
 		showError "ce" $1
 		return -1
